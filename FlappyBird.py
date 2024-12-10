@@ -12,34 +12,34 @@ os.chdir(script_dir)
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode((360, 640))
+screen = pygame.display.set_mode((440, 640))
 pygame.display.set_caption("Flappy Bird")
 clock = pygame.time.Clock()
 running = True
 dt = 0
 
 # Carregando imagens
-birdImage = pygame.image.load(os.path.join('Assets\Images', 'birdSprite.png'))
+birdImage = pygame.image.load(os.path.join('Assets\\Images', 'birdSprite.png'))
 birdImage = pygame.transform.scale(birdImage, (100, 100))
-background = pygame.image.load(os.path.join('Assets\Images', 'background.png'))
+background = pygame.image.load(os.path.join('Assets\\Images', 'background.png'))
 background = pygame.transform.scale(background, (background.get_rect().w, 640))
-background_ground = pygame.image.load(os.path.join('Assets\Images', 'ground.png'))
+background_ground = pygame.image.load(os.path.join('Assets\\Images', 'ground.png'))
 background_ground = pygame.transform.scale(background_ground, (background_ground.get_rect().w, 80))
-pipe_lowerImage = pygame.image.load(os.path.join('Assets\Images', 'pipe.png'))
+pipe_lowerImage = pygame.image.load(os.path.join('Assets\\Images', 'pipe.png'))
 pipe_lowerImage = pipe_topImage = pygame.transform.scale(pipe_lowerImage, (90, 178))
-pipe_topImage = pygame.image.load(os.path.join('Assets\Images', 'pipe.png'))
+pipe_topImage = pygame.image.load(os.path.join('Assets\\Images', 'pipe.png'))
 pipe_topImage = pygame.transform.flip(pipe_topImage, False, True)
 pipe_topImage = pygame.transform.scale(pipe_topImage, (90, 178))
-pipe_body = pygame.image.load(os.path.join('Assets\Images', 'pipe_body.png'))
-pipe_end = pygame.image.load(os.path.join('Assets\Images', 'pipe_end.png'))
-w_p = pygame.image.load(os.path.join('Assets\Images', 'tile_0358.png'))
+pipe_body = pygame.image.load(os.path.join('Assets\\Images', 'pipe_body.png'))
+pipe_end = pygame.image.load(os.path.join('Assets\\Images', 'pipe_end.png'))
+w_p = pygame.image.load(os.path.join('Assets\\Images', 'tile_0358.png'))
 w_p = pygame.transform.scale(w_p, (64, 64))
-w_b = pygame.image.load(os.path.join('Assets\Images', 'tile_0086.png'))
+w_b = pygame.image.load(os.path.join('Assets\\Images', 'tile_0086.png'))
 w_b =pygame.transform.scale(w_b, (64, 64))
 
 # Carregando fontes
-fonte_numero = pygame.font.Font("Assets\Font\\flappy-font-number.ttf", 30)
-fonte_texto = pygame.font.Font("Assets\Font\\flappy-font-text.ttf", 48)
+fonte_numero = pygame.font.Font("Assets\\Font\\flappy-font-number.ttf", 30)
+fonte_texto = pygame.font.Font("Assets\\Font\\flappy-font-text.ttf", 48)
 
 # Classe do Pássaro
 class Bird(pygame.sprite.Sprite):
@@ -78,9 +78,11 @@ class pipeBody(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left = screen.get_width()
         if nmr_pipe == 1:
-            self.rect.left += 270
+            self.rect.left += 220
         elif nmr_pipe == 2:
-            self.rect.left += 100
+            self.rect.left += 440
+        elif nmr_pipe != 0:
+            self.rect.left = nmr_pipe
         if lower == 1:
             self.rect.bottom = 580
         else:
@@ -95,9 +97,11 @@ class pipeEnd(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left = screen.get_width()
         if nmr_pipe == 1:
-            self.rect.left += 270
+            self.rect.left += 220
         elif nmr_pipe == 2:
-            self.rect.left += 100
+            self.rect.left += 440
+        elif nmr_pipe != 0:
+            self.rect.left = nmr_pipe
         if lower == 1:
             self.rect.top = 580 - tamanho - 32
         else:
@@ -146,6 +150,7 @@ bg_x1 = 0
 # Pipes
 pipes = pygame.sprite.Group() # Grupo dos pipes
 
+# ---------------- Primeiro pipe ----------------#
 # Primeiro LowerPipe
 lp1 = LowerPipe()
 pipes.add(lp1.pipe_body)
@@ -156,6 +161,7 @@ tp1 = TopPipe(lp1.tamanho)
 pipes.add(tp1.pipe_body)
 pipes.add(tp1.pipe_end)
 
+# ---------------- Segundo pipe ---------------- #
 # Segundo LowerPipe
 lp2 = LowerPipe(1)
 pipes.add(lp2.pipe_body)
@@ -165,6 +171,17 @@ pipes.add(lp2.pipe_end)
 tp2 = TopPipe(lp2.tamanho, 1)
 pipes.add(tp2.pipe_body)
 pipes.add(tp2.pipe_end)
+
+# ---------------- Terceiro pipe ---------------- #
+# Terceiro LowerPipe
+lp3 = LowerPipe(2)
+pipes.add(lp3.pipe_body)
+pipes.add(lp3.pipe_end)
+
+# Terceiro TopPipe
+tp3 = TopPipe(lp3.tamanho, 2)
+pipes.add(tp3.pipe_body)
+pipes.add(tp3.pipe_end)
 
 # Lista contendo as hitbox dos pipes
 rects_pipes = []
@@ -180,7 +197,7 @@ score = "0"
 
 # Variáveis de controle
 start = False
-conta_pontos_lp1 = True
+conta_pontos = 0
 
 # Looping do jogo
 while running:
@@ -207,17 +224,24 @@ while running:
             lp1.update()
             tp2.update()
             lp2.update()
+            tp3.update()
+            lp3.update()
         bg_x1 -= 2
 
     # Somar +1 na pontuação ao passar de um pipe
-    if lp1.pipe_body.rect.centerx <= screen.get_width()/4 and conta_pontos_lp1:
+    if lp1.pipe_body.rect.centerx <= screen.get_width()/4 and conta_pontos == 0:
         score = str(int(score)+1)
-        conta_pontos_lp1 = False
+        conta_pontos = 1
 
     # Somar +1 na pontuação ao passar de um pipe
-    if lp2.pipe_body.rect.centerx <= screen.get_width()/4 and not conta_pontos_lp1:
+    if lp2.pipe_body.rect.centerx <= screen.get_width()/4 and conta_pontos == 1:
         score = str(int(score)+1)
-        conta_pontos_lp1 = True
+        conta_pontos = 2
+
+    # Somar +1 na pontuação ao passar de um pipe
+    if lp3.pipe_body.rect.centerx <= screen.get_width()/4 and conta_pontos == 2:
+        score = str(int(score)+1)
+        conta_pontos = 0
 
     # Mudar o posicionamento do primeiro pipe após passar da tela
     if lp1.pipe_body.rect.right <= 0:
@@ -227,10 +251,10 @@ while running:
         rects_pipes.pop(0)
         rects_pipes.pop(0)
         rects_pipes.pop(0)
-        lp1 = LowerPipe(2)
+        lp1 = LowerPipe(lp3.pipe_body.rect.left+220)
         pipes.add(lp1.pipe_body)
         pipes.add(lp1.pipe_end)
-        tp1 = TopPipe(lp1.tamanho, 2)
+        tp1 = TopPipe(lp1.tamanho, lp3.pipe_body.rect.left+220)
         pipes.add(tp1.pipe_body)
         pipes.add(tp1.pipe_end)
         rects_pipes.append(lp1.pipe_body)
@@ -246,16 +270,35 @@ while running:
         rects_pipes.pop(0)
         rects_pipes.pop(0)
         rects_pipes.pop(0)
-        lp2 = LowerPipe(2)
+        lp2 = LowerPipe(lp1.pipe_body.rect.left+220)
         pipes.add(lp2.pipe_body)
         pipes.add(lp2.pipe_end)
-        tp2 = TopPipe(lp2.tamanho, 2)
+        tp2 = TopPipe(lp2.tamanho, lp1.pipe_body.rect.left+220)
         pipes.add(tp2.pipe_body)
         pipes.add(tp2.pipe_end)
         rects_pipes.append(lp2.pipe_body)
         rects_pipes.append(lp2.pipe_end)
         rects_pipes.append(tp2.pipe_body)
         rects_pipes.append(tp2.pipe_end)
+
+    # Mudar o posicionamento do terceiro pipe após passar da tela
+    if lp3.pipe_body.rect.right <= 0:
+        lp3.kill()
+        tp3.kill()
+        rects_pipes.pop(0)
+        rects_pipes.pop(0)
+        rects_pipes.pop(0)
+        rects_pipes.pop(0)
+        lp3 = LowerPipe(lp2.pipe_body.rect.left+220)
+        pipes.add(lp3.pipe_body)
+        pipes.add(lp3.pipe_end)
+        tp3 = TopPipe(lp3.tamanho, lp2.pipe_body.rect.left+220)
+        pipes.add(tp3.pipe_body)
+        pipes.add(tp3.pipe_end)
+        rects_pipes.append(lp3.pipe_body)
+        rects_pipes.append(lp3.pipe_end)
+        rects_pipes.append(tp3.pipe_body)
+        rects_pipes.append(tp3.pipe_end)
 
     # Colisão
     if pygame.Rect.collidelist(bird.hitbox, rects_pipes) != -1:
@@ -289,7 +332,7 @@ while running:
         screen.blit(score_text, score_text_rect)
 
     # Desenhos das hitbox para teste
-    #pygame.draw.rect(screen, (100, 0, 0), bird.hitbox, 2)      # Hitbox do pássaro
+    pygame.draw.rect(screen, (100, 0, 0), bird.hitbox, 2)      # Hitbox do pássaro
 
     #pygame.draw.rect(screen, (0, 0, 255), lp1.pipe_body.hitbox, 2)
     #pygame.draw.rect(screen, (100, 100, 255), lp1.pipe_end.hitbox, 2)
