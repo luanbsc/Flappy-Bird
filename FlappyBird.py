@@ -1,7 +1,7 @@
 import pygame
 import os
 import random
-import math
+import json
 
 # Salvando caminho do diretorio em que se encontra a pasta do jogo
 script_path = os.path.abspath(__file__)
@@ -45,6 +45,12 @@ button_start = pygame.image.load(os.path.join('Assets\\images', 'start.png'))
 button_start = pygame.transform.scale(button_start, (120, 42))
 button_score = pygame.image.load(os.path.join('Assets\\images', 'score.png'))
 button_score = pygame.transform.scale(button_score, (120, 42))
+medalha_bronze = pygame.image.load(os.path.join('Assets\\images', 'bronze.png'))
+medalha_bronze = pygame.transform.scale(medalha_bronze, (66, 66))
+medalha_silver = pygame.image.load(os.path.join('Assets\\images', 'silver.png'))
+medalha_silver = pygame.transform.scale(medalha_silver, (66, 66))
+medalha_gold = pygame.image.load(os.path.join('Assets\\images', 'gold.png'))
+medalha_gold = pygame.transform.scale(medalha_gold, (66, 66))
 
 # Carregando fontes
 fonte_numero = pygame.font.Font("Assets\\font\\flappy-font-number.ttf", 30)
@@ -70,17 +76,21 @@ class Bird(pygame.sprite.Sprite):
         self.image = birdImage
         self.rect = self.image.get_rect()
         self.rect.center = (screen.get_width()/4, screen.get_height()/2)
-        self.hitbox = pygame.Rect(self.rect.left, self.rect.top, 48, 36)
+        self.hitbox = pygame.Rect(self.rect.left, self.rect.top, 40, 36)
         self.velocidade_queda = 0
         self.move_up = False
         self.game_over = False
+        self.angle_rotate = 0
+        self.rect_rotated = self.image.get_rect()
 
     def update(self):
+        self.image = pygame.transform.rotate(birdImage, self.angle_rotate)
+        self.rect_rotated = self.image.get_rect(center=(screen.get_width()/4, self.rect.y + 50))
         self.rect.y += self.velocidade_queda
         if self.velocidade_queda < 10:
             self.velocidade_queda += 0.5
         if self.move_up:
-            #self.image = pygame.transform.rotate(self.image, )
+            self.angle_rotate = 50
             self.velocidade_queda = -8
             self.move_up = False
             sfx_asas.play()
@@ -91,6 +101,8 @@ class Bird(pygame.sprite.Sprite):
             self.rect.y = 515
             self.game_over = True
         self.hitbox.center = (self.rect.x + 50, self.rect.y + 52)
+        if self.angle_rotate >= -50:
+            self.angle_rotate -= 2
     
     def reset(self):
         self.rect.center = (screen.get_width()/4, screen.get_height()/2)
@@ -240,6 +252,7 @@ while running:
         # Score
         score = "0"
         score_animation = "0"
+        highscore_animation = "0"
 
         # Variáveis de controle
         menu = True
@@ -250,6 +263,13 @@ while running:
         title_sobe = True
         score = "0"
         bird.game_over = False
+
+        highscr = 0
+        if os.path.exists("scr.bin"):
+            # Carregar HighScore caso exista
+            with open("scr.bin", "rb") as arquivo:
+                highscr_bin = arquivo.read()
+                highscr = json.loads(highscr_bin.decode("utf-8"))
 
         # Reiniciando o grupo de pipes
         pipes.empty()
@@ -423,7 +443,7 @@ while running:
     screen.blit(background_ground, (bg_x1, 580))
 
     # Desenhar o Bird na tela
-    spritePlayer.draw(screen)
+    screen.blit(bird.image, bird.rect_rotated)
 
     # Desenhar os canos na tela
     pipes.draw(screen)
@@ -432,6 +452,8 @@ while running:
     if not start and not menu:
         screen.blit(w_b, (screen.get_width()/2 - 32, screen.get_height()/2))
         screen.blit(getready, (screen.get_width()/5 - 15, screen.get_height()/6))
+        bird.rect.center = (screen.get_width()/4, screen.get_height()/2)
+        bird.rect_rotated.center = (screen.get_width()/4, screen.get_height()/2)
     # Desenhar o score
     elif start and not bird.game_over:
         score_text = fonte_numero.render(score, False, (0, 0, 0))
@@ -441,7 +463,7 @@ while running:
     if menu:
         # Título Flappy Bird
         screen.blit(flappybird, (screen.get_width()/8, screen.get_height()/3 - 36 + title_x))
-        bird.rect.center = (screen.get_width() - screen.get_width()/6 + 20, screen.get_height()/3 + title_x)
+        bird.rect_rotated.center = (screen.get_width() - screen.get_width()/6 + 20, screen.get_height()/3 + title_x)
 
         # Botão de Start
         screen.blit(button_start, (screen.get_width()/6, screen.get_height() - screen.get_height()/5 + 10))
@@ -480,6 +502,14 @@ while running:
         # Painel
         screen.blit(painel, (screen.get_width()/5 - 40, screen.get_height()/3 + 50))
 
+        # Medalha
+        if int(score) >= 10 and int(score) < 16:
+            screen.blit(medalha_bronze, (screen.get_width()/5, screen.get_height()/3 + 112))
+        elif int(score) != 0 and int(score) < 40:
+            screen.blit(medalha_silver, ((screen.get_width()/5, screen.get_height()/3 + 112)))
+        elif int(score) != 0:
+            screen.blit(medalha_gold, ((screen.get_width()/5, screen.get_height()/3 + 112)))
+
         # Textos do painel
         # MEDAL
         medal_text = fonte_menu_panel.render("MEDAL", False, (231, 76, 60))
@@ -505,17 +535,33 @@ while running:
                 fade_in = True
                 sfx_alterna_aba.play()
                 restart = True
+                bird.image = birdImage
+                bird.rect.center = (screen.get_width()/4, screen.get_height()/2)
+                bird.rect_rotated = bird.image.get_rect()
         
         # Desenhar o número do Score atual
         score_text = fonte_numero.render(score_animation, False, (0, 0, 0))
         score_text_rect = score_text.get_rect(left = screen.get_width()/2 + 85, top=screen.get_height()/3 + 100)
         screen.blit(score_text, score_text_rect)
 
-        # Desenhar o número do Best Score
 
+        # Salvar HighScore em arquivo
+        if int(score) > highscr:
+            highscr = int(score)
+            with open("scr.bin", "wb") as arquivo:
+                scr_bin = json.dumps(int(score)).encode("utf-8")
+                arquivo.write(scr_bin)
+
+        # Desenhar o número do Best Score
+        highscore_text = fonte_numero.render(highscore_animation, False, (0, 0, 0))
+        highscore_text_rect = highscore_text.get_rect(left = screen.get_width()/2 + 85, top=screen.get_height()/3 + 170)
+        screen.blit(highscore_text, highscore_text_rect)
 
         if int(score_animation) < int(score):
             score_animation = str(int(score_animation) + 1)
+        
+        if int(highscore_animation) < highscr:
+            highscore_animation = str(int(highscore_animation) + 1)
 
     # Aplicar a opacidade na superfície de fade
     fade_surface.set_alpha(alpha)
