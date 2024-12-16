@@ -505,9 +505,9 @@ while running:
         # Medalha
         if int(score) >= 10 and int(score) < 16:
             screen.blit(medalha_bronze, (screen.get_width()/5, screen.get_height()/3 + 112))
-        elif int(score) != 0 and int(score) < 40:
+        elif int(score) >= 16 and int(score) < 40:
             screen.blit(medalha_silver, ((screen.get_width()/5, screen.get_height()/3 + 112)))
-        elif int(score) != 0:
+        elif int(score) >= 40:
             screen.blit(medalha_gold, ((screen.get_width()/5, screen.get_height()/3 + 112)))
 
         # Textos do painel
