@@ -265,9 +265,9 @@ while running:
         bird.game_over = False
 
         highscr = 0
-        if os.path.exists("teste\\scr.bin"):
+        if os.path.exists("scr.bin"):
             # Carregar HighScore caso exista
-            with open("teste\\scr.bin", "rb") as arquivo:
+            with open("scr.bin", "rb") as arquivo:
                 highscr_bin = arquivo.read()
                 highscr = json.loads(highscr_bin.decode("utf-8"))
 
@@ -548,7 +548,7 @@ while running:
         # Salvar HighScore em arquivo
         if int(score) > highscr:
             highscr = int(score)
-            with open("teste\\scr.bin", "wb") as arquivo:
+            with open("scr.bin", "wb") as arquivo:
                 scr_bin = json.dumps(int(score)).encode("utf-8")
                 arquivo.write(scr_bin)
 
