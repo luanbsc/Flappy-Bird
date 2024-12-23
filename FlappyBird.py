@@ -19,8 +19,12 @@ running = True
 dt = 0
 
 # Carregando imagens
-birdImage = pygame.image.load(os.path.join('Assets\\images', 'birdSprite.png'))
+birdImage = pygame.image.load(os.path.join('Assets\\images', 'Sprite2.png'))
 birdImage = pygame.transform.scale(birdImage, (100, 100))
+birdImage_f1 = pygame.image.load(os.path.join('Assets\\images', 'Sprite1.png'))
+birdImage_f1 = pygame.transform.scale(birdImage_f1, (100, 100))
+birdImage_f2 = pygame.image.load(os.path.join('Assets\\images', 'Sprite3.png'))
+birdImage_f2 = pygame.transform.scale(birdImage_f2, (100, 100))
 background = pygame.image.load(os.path.join('Assets\\images', 'spr_bg.png'))
 background = pygame.transform.scale(background, (440, 640))
 background_ground = pygame.image.load(os.path.join('Assets\\images', 'ground.png'))
@@ -43,14 +47,14 @@ button_ok = pygame.image.load(os.path.join('Assets\\images', 'ok.png'))
 button_ok = pygame.transform.scale(button_ok, (120, 42))
 button_start = pygame.image.load(os.path.join('Assets\\images', 'start.png'))
 button_start = pygame.transform.scale(button_start, (120, 42))
-button_score = pygame.image.load(os.path.join('Assets\\images', 'score.png'))
-button_score = pygame.transform.scale(button_score, (120, 42))
+button_quit = pygame.image.load(os.path.join('Assets\\images', 'quit.png'))
+button_quit = pygame.transform.scale(button_quit, (120, 42))
 medalha_bronze = pygame.image.load(os.path.join('Assets\\images', 'bronze.png'))
-medalha_bronze = pygame.transform.scale(medalha_bronze, (66, 66))
+medalha_bronze = pygame.transform.scale(medalha_bronze, (96, 96))
 medalha_silver = pygame.image.load(os.path.join('Assets\\images', 'silver.png'))
-medalha_silver = pygame.transform.scale(medalha_silver, (66, 66))
+medalha_silver = pygame.transform.scale(medalha_silver, (96, 96))
 medalha_gold = pygame.image.load(os.path.join('Assets\\images', 'gold.png'))
-medalha_gold = pygame.transform.scale(medalha_gold, (66, 66))
+medalha_gold = pygame.transform.scale(medalha_gold, (96, 96))
 
 # Carregando fontes
 fonte_numero = pygame.font.Font("Assets\\font\\flappy-font-number.ttf", 30)
@@ -67,13 +71,15 @@ sfx_asas = pygame.mixer.Sound("Assets\\sons\\sfx_wing.wav")
 sfx_alterna_aba = pygame.mixer.Sound("Assets\\sons\\sfx_swooshing.wav")
 sfx_ponto = pygame.mixer.Sound("Assets\\sons\\sfx_point.wav")
 sfx_hit = pygame.mixer.Sound("Assets\\sons\\sfx_hit.wav")
+sfx_die = pygame.mixer.Sound("Assets\\sons\\sfx_die.wav")
 
 # Classe do Pássaro
 class Bird(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = birdImage
+        self.image_original = birdImage
+        self.image = self.image_original
         self.rect = self.image.get_rect()
         self.rect.center = (screen.get_width()/4, screen.get_height()/2)
         self.hitbox = pygame.Rect(self.rect.left, self.rect.top, 40, 36)
@@ -84,25 +90,31 @@ class Bird(pygame.sprite.Sprite):
         self.rect_rotated = self.image.get_rect()
 
     def update(self):
-        self.image = pygame.transform.rotate(birdImage, self.angle_rotate)
+        self.image = pygame.transform.rotate(self.image_original, self.angle_rotate)
         self.rect_rotated = self.image.get_rect(center=(screen.get_width()/4, self.rect.y + 50))
         self.rect.y += self.velocidade_queda
         if self.velocidade_queda < 10:
             self.velocidade_queda += 0.5
-        if self.move_up:
+        if self.move_up and not self.game_over:
             self.angle_rotate = 50
             self.velocidade_queda = -8
             self.move_up = False
             sfx_asas.play()
         if self.rect.y < -120:
             self.rect.y = -120
-        if self.hitbox.bottom >= 580:
+        if not self.game_over and self.hitbox.bottom >= 580:
             sfx_hit.play()
             self.rect.y = 515
             self.game_over = True
         self.hitbox.center = (self.rect.x + 50, self.rect.y + 52)
         if self.angle_rotate >= -50:
             self.angle_rotate -= 2
+        
+        if self.game_over:
+            if self.hitbox.bottom < 580:
+                self.rect.y += self.velocidade_queda
+            else:
+                self.rect.y = 515
     
     def reset(self):
         self.rect.center = (screen.get_width()/4, screen.get_height()/2)
@@ -114,7 +126,10 @@ class pipeBody(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.tamanho = tamanho
         self.image = pipe_body
-        self.image = pygame.transform.scale(self.image, (80, self.tamanho))
+        if lower == 1:
+            self.image = pygame.transform.scale(self.image, (80, self.tamanho))
+        else:
+            self.image = pygame.transform.scale(self.image, (80, self.tamanho + 120))
         self.rect = self.image.get_rect()
         self.rect.left = screen.get_width()
         if nmr_pipe == 1:
@@ -127,7 +142,7 @@ class pipeBody(pygame.sprite.Sprite):
             self.rect.bottom = 580
             self.hitbox = pygame.Rect(self.rect.left + 4, self.rect.top, self.rect.w - 8, self.rect.h)
         else:
-            self.rect.top = 0
+            self.rect.top = -120
             self.hitbox = pygame.Rect(self.rect.left + 4, self.rect.top, self.rect.w - 8, self.rect.h)
 
 # Classe da cabeça dos pipes
@@ -232,6 +247,10 @@ for sprite in pipes.sprites():
 w_troca = pygame.USEREVENT + 1
 pygame.time.set_timer(w_troca, 500)
 
+# Criação de evento para fazer animação do pássaro batendo as asas
+birdImage_troca = pygame.USEREVENT + 2
+pygame.time.set_timer(birdImage_troca, 100)
+
 # Variável que permite a repetição do jogo
 restart = True
 
@@ -261,8 +280,8 @@ while running:
         bg_x1 = 0
         title_x = 0
         title_sobe = True
-        score = "0"
         bird.game_over = False
+        frame = 0
 
         highscr = 0
         if os.path.exists("scr.bin"):
@@ -313,11 +332,21 @@ while running:
             rects_pipes.append(sprite.hitbox)
 
     for event in pygame.event.get():
+        if  event.type == birdImage_troca and not bird.game_over:
+            if frame == 0:
+                bird.image_original = birdImage_f1
+                bird.image = bird.image_original
+                frame = 1
+            else:
+                bird.image_original = birdImage_f2
+                bird.image = bird.image_original
+                frame = 0
+                birdImage_f2, birdImage = birdImage, birdImage_f2
         if event.type == w_troca:
             w_p, w_b = w_b, w_p
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and not menu:
+        if event.type == pygame.KEYDOWN and not menu:
             if event.key == pygame.K_w:
                 bird.move_up = True
                 if not start:
@@ -430,8 +459,8 @@ while running:
 
         # Colisão
         if bird.game_over == False and pygame.Rect.collidelist(bird.hitbox, rects_pipes) != -1:
-            sfx_hit.play()
             bird.game_over = True
+            sfx_hit.play()
 
     # Reseta a posição do fundo para a imagem ficar em looping
     if bg_x1 <= -300:
@@ -442,11 +471,11 @@ while running:
     screen.blit(background, (0, 0))
     screen.blit(background_ground, (bg_x1, 580))
 
-    # Desenhar o Bird na tela
-    screen.blit(bird.image, bird.rect_rotated)
-
     # Desenhar os canos na tela
     pipes.draw(screen)
+
+    # Desenhar o Bird na tela
+    screen.blit(bird.image, bird.rect_rotated)
 
     # Desenhar botão indicativo de iniciar o jogo
     if not start and not menu:
@@ -468,8 +497,8 @@ while running:
         # Botão de Start
         screen.blit(button_start, (screen.get_width()/6, screen.get_height() - screen.get_height()/5 + 10))
 
-        # Botão de Score
-        screen.blit(button_score, (250, screen.get_height() - screen.get_height()/5 + 10))
+        # Botão de Quit
+        screen.blit(button_quit, (250, screen.get_height() - screen.get_height()/5 + 10))
 
         # Checagem de clicar no Start
         if pygame.mouse.get_pressed()[0]:
@@ -479,10 +508,10 @@ while running:
                 bird.reset()
                 menu = False
         
-        # Checagem de clicar no Score
+        # Checagem de clicar no Quit
         if pygame.mouse.get_pressed()[0]:
-            if button_score.get_rect().collidepoint(pygame.mouse.get_pos()):
-                pass
+            if button_quit.get_rect(left=250, top=screen.get_height() - screen.get_height()/5 + 10).collidepoint(pygame.mouse.get_pos()):
+                running = False
 
         if title_x >= 20:
             title_sobe = True
@@ -496,6 +525,8 @@ while running:
 
     # Imprimir tela de game over
     if bird.game_over:
+        bird.update()
+        
         # Nome GameOver
         screen.blit(gameover, (screen.get_width()/5 - 15, screen.get_height()/4))
 
@@ -503,12 +534,12 @@ while running:
         screen.blit(painel, (screen.get_width()/5 - 40, screen.get_height()/3 + 50))
 
         # Medalha
-        if int(score) >= 10 and int(score) < 16:
-            screen.blit(medalha_bronze, (screen.get_width()/5, screen.get_height()/3 + 112))
-        elif int(score) >= 16 and int(score) < 40:
-            screen.blit(medalha_silver, ((screen.get_width()/5, screen.get_height()/3 + 112)))
+        if int(score) >= 10 and int(score) < 20:
+            screen.blit(medalha_bronze, (screen.get_width()/5 - 15, screen.get_height()/3 + 105))
+        elif int(score) >= 20 and int(score) < 40:
+            screen.blit(medalha_silver, (screen.get_width()/5 - 15, screen.get_height()/3 + 105))
         elif int(score) >= 40:
-            screen.blit(medalha_gold, ((screen.get_width()/5, screen.get_height()/3 + 112)))
+            screen.blit(medalha_gold, (screen.get_width()/5 - 15, screen.get_height()/3 + 105))
 
         # Textos do painel
         # MEDAL
