@@ -58,13 +58,7 @@ medalha_gold = pygame.transform.scale(medalha_gold, (96, 96))
 
 # Carregando fontes
 fonte_numero = pygame.font.Font("Assets\\font\\flappy-font-number.ttf", 30)
-fonte_texto = pygame.font.Font("Assets\\font\\flappy-font-text.ttf", 48)
-fonte_texto_bg = pygame.font.Font("Assets\\font\\flappy-font-text.ttf", 49)
-fonte_menu = pygame.font.Font("Assets\\font\\Minecraft.ttf", 24)
 fonte_menu_panel = pygame.font.Font("Assets\\font\\Minecraft.ttf", 20)
-fonte_title_bg = pygame.font.Font("Assets\\font\\flappy-font-text.ttf", 50)
-fonte_title = pygame.font.Font("Assets\\font\\FlappyBirdy.ttf", 80)
-fonte_title_bg2 = pygame.font.Font("Assets\\font\\FlappyBirdy.ttf", 84)
 
 # Carregando áudios
 sfx_asas = pygame.mixer.Sound("Assets\\sons\\sfx_wing.wav")
