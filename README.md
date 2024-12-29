@@ -34,7 +34,7 @@
 
 <p>Abaixo você pode ver um gif do jogo sendo jogado:</p>
 
-<img src="./game.gif" alt="Flappy Bird Gameplay">
+<img src="./game.gif" heigh="700" alt="Flappy Bird Gameplay">
 
 <hr>
 
