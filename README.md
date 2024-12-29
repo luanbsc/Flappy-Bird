@@ -15,7 +15,7 @@
 <ul>
 <li><strong>Jogabilidade simples e viciante</strong>.</li>
 <li><strong>Sprites animados</strong> para o passarinho e elementos do cenário.</li>
-<li><strong>Detecção de colisão</strong> precisa entre o passarinho e os tubos.</li>
+<li><strong>Detecção de colisão</strong> entre o passarinho e os tubos.</li>
 <li><strong>Pontuação</strong> exibida em tempo real.</li>
 </ul>
 
