@@ -116,11 +116,11 @@ class Bird(pygame.sprite.Sprite):
 
 # Classe do corpo dos pipes
 class pipeBody(pygame.sprite.Sprite):
-    def __init__(self, tamanho, lower=0, nmr_pipe=0):
+    def __init__(self, tamanho, lower=0, nmr_pipe=0, tamanho_lower_pipe=0):
         pygame.sprite.Sprite.__init__(self)
         self.tamanho = tamanho
         self.image = pipe_body
-        if lower == 1:
+        if lower == 1 or lower == 2:
             self.image = pygame.transform.scale(self.image, (80, self.tamanho))
         else:
             self.image = pygame.transform.scale(self.image, (80, self.tamanho + 120))
@@ -135,13 +135,16 @@ class pipeBody(pygame.sprite.Sprite):
         if lower == 1:
             self.rect.bottom = 580
             self.hitbox = pygame.Rect(self.rect.left + 4, self.rect.top, self.rect.w - 8, self.rect.h)
+        elif lower == 2:
+            self.rect.bottom = 580 - tamanho_lower_pipe - 32 - 126 - 32
+            self.hitbox = pygame.Rect(self.rect.left + 4, self.rect.top, self.rect.w - 8, self.rect.h)
         else:
             self.rect.top = -120
             self.hitbox = pygame.Rect(self.rect.left + 4, self.rect.top, self.rect.w - 8, self.rect.h)
 
 # Classe da cabeça dos pipes
 class pipeEnd(pygame.sprite.Sprite):
-    def __init__(self, tamanho, lower=0, nmr_pipe=0):
+    def __init__(self, tamanho, lower=0, nmr_pipe=0, tamanho_lower_pipe=0):
         pygame.sprite.Sprite.__init__(self)
         self.image = pipe_end
         self.rect = self.image.get_rect()
@@ -154,6 +157,8 @@ class pipeEnd(pygame.sprite.Sprite):
             self.rect.left = nmr_pipe
         if lower == 1:
             self.rect.top = 580 - tamanho - 32
+        elif lower == 2:
+            self.rect.top = 580 - tamanho_lower_pipe - 32 - 126 - 32
         else:
             self.rect.top = tamanho
         self.hitbox = pygame.Rect(self.rect.top, self.rect.left, self.rect.w, self.rect.h)
@@ -162,7 +167,7 @@ class pipeEnd(pygame.sprite.Sprite):
 class LowerPipe(pygame.sprite.Sprite):
     def __init__(self, nmr_pipe=0):
        pygame.sprite.Sprite.__init__(self)
-       self.tamanho = random.randint(32, 390)
+       self.tamanho = random.randint(0, 195)
        self.pipe_body = pipeBody(self.tamanho, 1, nmr_pipe)
        self.pipe_end = pipeEnd(self.tamanho, 1, nmr_pipe)
 
@@ -178,17 +183,29 @@ class LowerPipe(pygame.sprite.Sprite):
 class TopPipe(pygame.sprite.Sprite):
     def __init__(self, tamanho, nmr_pipe=0):
        pygame.sprite.Sprite.__init__(self)
-       self.tamanho = 580 - tamanho - 32 - 126 - 32
-       self.pipe_body = pipeBody(self.tamanho, ..., nmr_pipe)
-       self.pipe_end = pipeEnd(self.tamanho, ..., nmr_pipe)
+       self.tamanho = random.randint(0, 580 - tamanho - 32 - 126 - 32 - 32 - 126 - 32)
+       self.pipe_body = pipeBody(self.tamanho, 2, nmr_pipe, tamanho)
+       self.pipe_end = pipeEnd(self.tamanho, 2, nmr_pipe, tamanho)
+       self.pipe_end_intermediario = pipeEnd(580 - (tamanho + 32 + 126 + 32 + self.tamanho + 32), ..., nmr_pipe)
+       self.pipe_body_topper = pipeBody(580 - (tamanho + 32 + 126 + 32 + self.tamanho + 32 + 126 + 32), ..., nmr_pipe)
+       self.pipe_end_topper = pipeEnd(580 - (tamanho + 32 + 126 + 32 + self.tamanho + 32 + 126 + 32), ..., nmr_pipe)
 
     def update(self):
         self.pipe_body.rect.x -= 2
         self.pipe_body.hitbox.top = self.pipe_body.rect.top
         self.pipe_body.hitbox.left = self.pipe_body.rect.left + 4
+        self.pipe_body_topper.rect.x -= 2
+        self.pipe_body_topper.hitbox.top = self.pipe_body_topper.rect.top
+        self.pipe_body_topper.hitbox.left = self.pipe_body_topper.rect.left + 4
         self.pipe_end.rect.x -= 2
         self.pipe_end.hitbox.top = self.pipe_end.rect.top
         self.pipe_end.hitbox.left = self.pipe_end.rect.left
+        self.pipe_end_intermediario.rect.x -= 2
+        self.pipe_end_intermediario.hitbox.top = self.pipe_end_intermediario.rect.top
+        self.pipe_end_intermediario.hitbox.left = self.pipe_end_intermediario.rect.left
+        self.pipe_end_topper.rect.x -= 2
+        self.pipe_end_topper.hitbox.top = self.pipe_end_topper.rect.top
+        self.pipe_end_topper.hitbox.left = self.pipe_end_topper.rect.left
 
 # ---------------- Instanciando objetos e variaveis de controle ---------------- #
 # Bird
@@ -198,44 +215,6 @@ spritePlayer.add(bird)
 
 # Pipes
 pipes = pygame.sprite.Group() # Grupo dos pipes
-
-# ---------------- Primeiro pipe ----------------#
-# Primeiro LowerPipe
-lp1 = LowerPipe()
-pipes.add(lp1.pipe_body)
-pipes.add(lp1.pipe_end)
-
-# Primeiro TopPipe
-tp1 = TopPipe(lp1.tamanho)
-pipes.add(tp1.pipe_body)
-pipes.add(tp1.pipe_end)
-
-# ---------------- Segundo pipe ---------------- #
-# Segundo LowerPipe
-lp2 = LowerPipe(1)
-pipes.add(lp2.pipe_body)
-pipes.add(lp2.pipe_end)
-
-# Segundo TopPipe
-tp2 = TopPipe(lp2.tamanho, 1)
-pipes.add(tp2.pipe_body)
-pipes.add(tp2.pipe_end)
-
-# ---------------- Terceiro pipe ---------------- #
-# Terceiro LowerPipe
-lp3 = LowerPipe(2)
-pipes.add(lp3.pipe_body)
-pipes.add(lp3.pipe_end)
-
-# Terceiro TopPipe
-tp3 = TopPipe(lp3.tamanho, 2)
-pipes.add(tp3.pipe_body)
-pipes.add(tp3.pipe_end)
-
-# Lista contendo as hitbox dos pipes
-rects_pipes = []
-for sprite in pipes.sprites():
-    rects_pipes.append(sprite.hitbox)
 
 # Criação de evento para alterar imagem da tecla W a cada 0,5 segundos
 w_troca = pygame.USEREVENT + 1
@@ -297,6 +276,7 @@ while running:
         tp1 = TopPipe(lp1.tamanho)
         pipes.add(tp1.pipe_body)
         pipes.add(tp1.pipe_end)
+        pipes.add(tp1.pipe_end_intermediario, tp1.pipe_end_topper, tp1.pipe_body_topper)
 
         # ---------------- Segundo pipe ---------------- #
         # Segundo LowerPipe
@@ -308,6 +288,7 @@ while running:
         tp2 = TopPipe(lp2.tamanho, 1)
         pipes.add(tp2.pipe_body)
         pipes.add(tp2.pipe_end)
+        pipes.add(tp2.pipe_end_intermediario, tp2.pipe_end_topper, tp2.pipe_body_topper)
 
         # ---------------- Terceiro pipe ---------------- #
         # Terceiro LowerPipe
@@ -319,6 +300,7 @@ while running:
         tp3 = TopPipe(lp3.tamanho, 2)
         pipes.add(tp3.pipe_body)
         pipes.add(tp3.pipe_end)
+        pipes.add(tp3.pipe_end_intermediario, tp3.pipe_end_topper, tp3.pipe_body_topper)
 
         # Lista contendo as hitbox dos pipes
         rects_pipes = []
@@ -402,21 +384,31 @@ while running:
             rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
+            rects_pipes.pop(0)
+            rects_pipes.pop(0)
+            rects_pipes.pop(0)
             lp1 = LowerPipe(lp3.pipe_body.rect.left+220)
             pipes.add(lp1.pipe_body)
             pipes.add(lp1.pipe_end)
             tp1 = TopPipe(lp1.tamanho, lp3.pipe_body.rect.left+220)
             pipes.add(tp1.pipe_body)
             pipes.add(tp1.pipe_end)
+            pipes.add(tp1.pipe_end_intermediario, tp1.pipe_end_topper, tp1.pipe_body_topper)
             rects_pipes.append(lp1.pipe_body)
             rects_pipes.append(lp1.pipe_end)
             rects_pipes.append(tp1.pipe_body)
             rects_pipes.append(tp1.pipe_end)
+            rects_pipes.append(tp1.pipe_end_intermediario)
+            rects_pipes.append(tp1.pipe_end_topper)
+            rects_pipes.append(tp1.pipe_body_topper)
 
         # Mudar o posicionamento do segundo pipe após passar da tela
         if lp2.pipe_body.rect.right <= 0:
             lp2.kill()
             tp2.kill()
+            rects_pipes.pop(0)
+            rects_pipes.pop(0)
+            rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
@@ -427,15 +419,22 @@ while running:
             tp2 = TopPipe(lp2.tamanho, lp1.pipe_body.rect.left+220)
             pipes.add(tp2.pipe_body)
             pipes.add(tp2.pipe_end)
+            pipes.add(tp2.pipe_end_intermediario, tp2.pipe_end_topper, tp2.pipe_body_topper)
             rects_pipes.append(lp2.pipe_body)
             rects_pipes.append(lp2.pipe_end)
             rects_pipes.append(tp2.pipe_body)
             rects_pipes.append(tp2.pipe_end)
+            rects_pipes.append(tp2.pipe_end_intermediario)
+            rects_pipes.append(tp2.pipe_end_topper)
+            rects_pipes.append(tp2.pipe_body_topper)
 
         # Mudar o posicionamento do terceiro pipe após passar da tela
         if lp3.pipe_body.rect.right <= 0:
             lp3.kill()
             tp3.kill()
+            rects_pipes.pop(0)
+            rects_pipes.pop(0)
+            rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
@@ -446,16 +445,19 @@ while running:
             tp3 = TopPipe(lp3.tamanho, lp2.pipe_body.rect.left+220)
             pipes.add(tp3.pipe_body)
             pipes.add(tp3.pipe_end)
+            pipes.add(tp3.pipe_end_intermediario, tp3.pipe_end_topper, tp3.pipe_body_topper)
             rects_pipes.append(lp3.pipe_body)
             rects_pipes.append(lp3.pipe_end)
             rects_pipes.append(tp3.pipe_body)
             rects_pipes.append(tp3.pipe_end)
+            rects_pipes.append(tp3.pipe_end_intermediario)
+            rects_pipes.append(tp3.pipe_end_topper)
+            rects_pipes.append(tp3.pipe_body_topper)
 
         # Colisão
         if bird.game_over == False and pygame.Rect.collidelist(bird.hitbox, rects_pipes) != -1:
             bird.game_over = True
             sfx_hit.play()
-
     # Reseta a posição do fundo para a imagem ficar em looping
     if bg_x1 <= -300:
         bg_x1 = 0
