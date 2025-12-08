@@ -49,6 +49,12 @@ button_start = pygame.image.load(os.path.join('Assets\\images', 'start.png'))
 button_start = pygame.transform.scale(button_start, (120, 42))
 button_quit = pygame.image.load(os.path.join('Assets\\images', 'quit.png'))
 button_quit = pygame.transform.scale(button_quit, (120, 42))
+button_easy = pygame.image.load(os.path.join('Assets\\images', 'easy.png'))
+button_easy = pygame.transform.scale(button_easy, (120, 42))
+button_normal = pygame.image.load(os.path.join('Assets\\images', 'normal.png'))
+button_normal = pygame.transform.scale(button_normal, (120, 42))
+button_hard = pygame.image.load(os.path.join('Assets\\images', 'hard.png'))
+button_hard = pygame.transform.scale(button_hard, (120, 42))
 medalha_bronze = pygame.image.load(os.path.join('Assets\\images', 'bronze.png'))
 medalha_bronze = pygame.transform.scale(medalha_bronze, (96, 96))
 medalha_silver = pygame.image.load(os.path.join('Assets\\images', 'silver.png'))
@@ -59,6 +65,7 @@ medalha_gold = pygame.transform.scale(medalha_gold, (96, 96))
 # Carregando fontes
 fonte_numero = pygame.font.Font("Assets\\font\\flappy-font-number.ttf", 30)
 fonte_menu_panel = pygame.font.Font("Assets\\font\\Minecraft.ttf", 20)
+fonte_expressao = pygame.font.Font("Assets\\font\\upheavtt.ttf", 30)
 
 # Carregando áudios
 sfx_asas = pygame.mixer.Sound("Assets\\sons\\sfx_wing.wav")
@@ -66,6 +73,61 @@ sfx_alterna_aba = pygame.mixer.Sound("Assets\\sons\\sfx_swooshing.wav")
 sfx_ponto = pygame.mixer.Sound("Assets\\sons\\sfx_point.wav")
 sfx_hit = pygame.mixer.Sound("Assets\\sons\\sfx_hit.wav")
 sfx_die = pygame.mixer.Sound("Assets\\sons\\sfx_die.wav")
+
+# Função que gera a expressão a depender da dificuldade selecionada
+def GerarExpressao(dificuldade):
+    if dificuldade == "easy":
+        tipoExpressao = random.randint(0, 1)
+        a = random.randint(0, 99)
+        b = random.randint(0, 99)
+        if tipoExpressao == 0:
+            return f"{a} + {b}"
+        else:
+            if a >= b:
+              return f"{a} - {b}"
+            else:
+                return f"{b} - {a}"
+    
+    if dificuldade == "normal":
+        tipoExpressao = random.randint(0, 3)
+        a = random.randint(0, 99)
+        b = random.randint(0, 99)
+        if tipoExpressao == 0:
+            return f"{a} + {b}"
+        elif tipoExpressao == 1:
+            if a >= b:
+              return f"{a} - {b}"
+            else:
+                return f"{b} - {a}"
+        elif tipoExpressao == 2:
+            if len(str(a)) == 2 and len(str(b)) == 2:
+                b = random.randint(0, 9)
+            return f"{a} X {b}"
+        else:
+            divisores = [d for d in range(1, a) if a % d == 0]
+            divisor = random.choice(divisores)
+            return f"{a}÷{divisor}"
+    
+    if dificuldade == "hard":
+        tipoExpressao = random.randint(0, 3)
+        a = random.randint(0, 999)
+        b = random.randint(0, 999)
+        if tipoExpressao == 0:
+            return f"{a} + {b}"
+        elif tipoExpressao == 1:
+            if a >= b:
+              return f"{a} - {b}"
+            else:
+                return f"{b} - {a}"
+        elif tipoExpressao == 2:
+            if len(str(a)) >= 2 and len(str(b)) >= 2:
+                b = random.randint(0, 9)
+            return f"{a} X {b}"
+        else:
+            divisores = [d for d in range(1, a) if a % d == 0]
+            divisor = random.choice(divisores)
+            return f"{a}÷{divisor}"
+            
 
 # Classe do Pássaro
 class Bird(pygame.sprite.Sprite):
@@ -249,6 +311,9 @@ while running:
         # Variáveis de controle
         menu = True
         start = False
+        escolherDificuldade = False
+        dificuldade = ""
+        expressao = ""
         conta_pontos = 0
         bg_x1 = 0
         title_x = 0
@@ -322,7 +387,7 @@ while running:
             w_p, w_b = w_b, w_p
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN and not menu:
+        if event.type == pygame.KEYDOWN and not menu and not escolherDificuldade:
             if event.key == pygame.K_w:
                 bird.move_up = True
                 if not start:
@@ -363,18 +428,21 @@ while running:
             sfx_ponto.play()
             score = str(int(score)+1)
             conta_pontos = 1
+            expressao = GerarExpressao(dificuldade)
 
         # Somar +1 na pontuação ao passar de um pipe
         if lp2.pipe_body.rect.centerx <= screen.get_width()/4 and conta_pontos == 1:
             sfx_ponto.play()
             score = str(int(score)+1)
             conta_pontos = 2
+            expressao = GerarExpressao(dificuldade)
 
         # Somar +1 na pontuação ao passar de um pipe
         if lp3.pipe_body.rect.centerx <= screen.get_width()/4 and conta_pontos == 2:
             sfx_ponto.play()
             score = str(int(score)+1)
             conta_pontos = 0
+            expressao = GerarExpressao(dificuldade)
 
         # Mudar o posicionamento do primeiro pipe após passar da tela
         if lp1.pipe_body.rect.right <= 0:
@@ -471,19 +539,52 @@ while running:
     pipes.draw(screen)
 
     # Desenhar o Bird na tela
-    screen.blit(bird.image, bird.rect_rotated)
+    if not escolherDificuldade:
+      screen.blit(bird.image, bird.rect_rotated)
 
     # Desenhar botão indicativo de iniciar o jogo
     if not start and not menu:
-        screen.blit(w_b, (screen.get_width()/2 - 32, screen.get_height()/2))
-        screen.blit(getready, (screen.get_width()/5 - 15, screen.get_height()/6))
-        bird.rect.center = (screen.get_width()/4, screen.get_height()/2)
-        bird.rect_rotated.center = (screen.get_width()/4, screen.get_height()/2)
-    # Desenhar o score
+        if escolherDificuldade:
+            screen.blit(button_easy, (screen.get_width()/2 - 64, screen.get_height()/2 - 64))
+            screen.blit(button_normal, (screen.get_width()/2 - 64, screen.get_height()/2))
+            screen.blit(button_hard, (screen.get_width()/2 - 64, screen.get_height()/2 + 64))
+
+            # Checagem de clicar no Easy
+            if pygame.mouse.get_pressed()[0]:
+                if button_easy.get_rect(left=screen.get_width()/2 - 64, top=screen.get_height()/2 - 64).collidepoint(pygame.mouse.get_pos()):
+                    fade_in = True
+                    sfx_alterna_aba.play()
+                    escolherDificuldade = False
+                    dificuldade = "easy"
+                    expressao = GerarExpressao(dificuldade)
+            
+            # Checagem de clicar no Normal
+            if pygame.mouse.get_pressed()[0]:
+                if button_normal.get_rect(left=screen.get_width()/2 - 64, top=screen.get_height()/2).collidepoint(pygame.mouse.get_pos()):
+                    fade_in = True
+                    sfx_alterna_aba.play()
+                    escolherDificuldade = False
+                    dificuldade = "normal"
+                    expressao = GerarExpressao(dificuldade)
+
+            # Checagem de clicar no Hard
+            if pygame.mouse.get_pressed()[0]:
+                if button_hard.get_rect(left=screen.get_width()/2 - 64, top=screen.get_height()/2 + 64).collidepoint(pygame.mouse.get_pos()):
+                    fade_in = True
+                    sfx_alterna_aba.play()
+                    escolherDificuldade = False
+                    dificuldade = "hard"
+                    expressao = GerarExpressao(dificuldade)
+        else:
+          screen.blit(w_b, (screen.get_width()/2 - 32, screen.get_height()/2))
+          screen.blit(getready, (screen.get_width()/5 - 15, screen.get_height()/6))
+          bird.rect.center = (screen.get_width()/4, screen.get_height()/2)
+          bird.rect_rotated.center = (screen.get_width()/4, screen.get_height()/2)
+    # Desenhar a expressão
     elif start and not bird.game_over:
-        score_text = fonte_numero.render(score, False, (0, 0, 0))
-        score_text_rect = score_text.get_rect(center=(screen.get_width()/2, screen.get_height()/10))
-        screen.blit(score_text, score_text_rect)
+        expressao_text = fonte_expressao.render(expressao, False, (0, 0, 0))
+        expressao_text_rect = expressao_text.get_rect(center=(screen.get_width()/2, screen.get_height()/10))
+        screen.blit(expressao_text, expressao_text_rect)
 
     if menu:
         # Título Flappy Bird
@@ -503,6 +604,7 @@ while running:
                 sfx_alterna_aba.play()
                 bird.reset()
                 menu = False
+                escolherDificuldade = True
         
         # Checagem de clicar no Quit
         if pygame.mouse.get_pressed()[0]:
