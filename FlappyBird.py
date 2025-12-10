@@ -13,7 +13,7 @@ os.chdir(script_dir)
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((440, 640))
-pygame.display.set_caption("Flappy Bird")
+pygame.display.set_caption("FlappyMath")
 clock = pygame.time.Clock()
 running = True
 dt = 0
@@ -42,7 +42,7 @@ gameover = pygame.transform.scale(gameover, (294, 66))
 getready = pygame.image.load(os.path.join('Assets\\images', 'getready.png'))
 getready = pygame.transform.scale(getready, (285, 75))
 flappybird = pygame.image.load(os.path.join('Assets\\images', 'title.png'))
-flappybird = pygame.transform.scale(flappybird, (267, 72))
+flappybird = pygame.transform.scale(flappybird, (310, 175))
 button_ok = pygame.image.load(os.path.join('Assets\\images', 'ok.png'))
 button_ok = pygame.transform.scale(button_ok, (120, 42))
 button_start = pygame.image.load(os.path.join('Assets\\images', 'start.png'))
@@ -106,7 +106,7 @@ def GerarExpressao(dificuldade):
         else:
             divisores = [d for d in range(1, a) if a % d == 0]
             divisor = random.choice(divisores)
-            return f"{a}÷{divisor}"
+            return f"{a} ÷ {divisor}"
     
     if dificuldade == "hard":
         tipoExpressao = random.randint(0, 3)
@@ -126,7 +126,7 @@ def GerarExpressao(dificuldade):
         else:
             divisores = [d for d in range(1, a) if a % d == 0]
             divisor = random.choice(divisores)
-            return f"{a}÷{divisor}"
+            return f"{a} ÷ {divisor}"
             
 
 # Classe do Pássaro
@@ -189,9 +189,9 @@ class pipeBody(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left = screen.get_width()
         if nmr_pipe == 1:
-            self.rect.left += 220
+            self.rect.left += 280
         elif nmr_pipe == 2:
-            self.rect.left += 440
+            self.rect.left += 560
         elif nmr_pipe != 0:
             self.rect.left = nmr_pipe
         if lower == 1:
@@ -212,9 +212,9 @@ class pipeEnd(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.left = screen.get_width()
         if nmr_pipe == 1:
-            self.rect.left += 220
+            self.rect.left += 280
         elif nmr_pipe == 2:
-            self.rect.left += 440
+            self.rect.left += 560
         elif nmr_pipe != 0:
             self.rect.left = nmr_pipe
         if lower == 1:
@@ -455,10 +455,10 @@ while running:
             rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
-            lp1 = LowerPipe(lp3.pipe_body.rect.left+220)
+            lp1 = LowerPipe(lp3.pipe_body.rect.left+280)
             pipes.add(lp1.pipe_body)
             pipes.add(lp1.pipe_end)
-            tp1 = TopPipe(lp1.tamanho, lp3.pipe_body.rect.left+220)
+            tp1 = TopPipe(lp1.tamanho, lp3.pipe_body.rect.left+280)
             pipes.add(tp1.pipe_body)
             pipes.add(tp1.pipe_end)
             pipes.add(tp1.pipe_end_intermediario, tp1.pipe_end_topper, tp1.pipe_body_topper)
@@ -481,10 +481,10 @@ while running:
             rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
-            lp2 = LowerPipe(lp1.pipe_body.rect.left+220)
+            lp2 = LowerPipe(lp1.pipe_body.rect.left+280)
             pipes.add(lp2.pipe_body)
             pipes.add(lp2.pipe_end)
-            tp2 = TopPipe(lp2.tamanho, lp1.pipe_body.rect.left+220)
+            tp2 = TopPipe(lp2.tamanho, lp1.pipe_body.rect.left+280)
             pipes.add(tp2.pipe_body)
             pipes.add(tp2.pipe_end)
             pipes.add(tp2.pipe_end_intermediario, tp2.pipe_end_topper, tp2.pipe_body_topper)
@@ -507,10 +507,10 @@ while running:
             rects_pipes.pop(0)
             rects_pipes.pop(0)
             rects_pipes.pop(0)
-            lp3 = LowerPipe(lp2.pipe_body.rect.left+220)
+            lp3 = LowerPipe(lp2.pipe_body.rect.left+280)
             pipes.add(lp3.pipe_body)
             pipes.add(lp3.pipe_end)
-            tp3 = TopPipe(lp3.tamanho, lp2.pipe_body.rect.left+220)
+            tp3 = TopPipe(lp3.tamanho, lp2.pipe_body.rect.left+280)
             pipes.add(tp3.pipe_body)
             pipes.add(tp3.pipe_end)
             pipes.add(tp3.pipe_end_intermediario, tp3.pipe_end_topper, tp3.pipe_body_topper)
